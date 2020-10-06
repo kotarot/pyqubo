@@ -18,7 +18,7 @@ from deprecated import deprecated
 
 
 @deprecated(version='0.4.0', reason="You should use simulated annealing sampler of dwave-neal directly.")
-def solve_qubo(qubo, num_reads=10, sweeps=1000, beta_range=(1.0, 50.0)):
+def solve_qubo(qubo, num_reads=10, sweeps=1000, seed=None, beta_range=(1.0, 50.0), beta_schedule_type='geometric'):
     """[deprecated] Solve QUBO with Simulated Annealing (SA) provided by neal.
     
     Args:
@@ -28,8 +28,12 @@ def solve_qubo(qubo, num_reads=10, sweeps=1000, beta_range=(1.0, 50.0)):
         
         sweeps (int, default=1000): Number of iterations in each run of SA.
          
+        seed (int, default=None): Seed to run SA. If not provided, a random seed is chosen.
+
         beta_range (tuple(float, float), default=(1.0, 50.0)): Tuple of start beta and end beta.
          
+        beta_schedule_type (string, default='geometric'): Beta schedule type. Supported values are: linear, geometric
+
     Returns:
          dict[label, bit]: The solution of SA.
     
@@ -55,14 +59,15 @@ def solve_qubo(qubo, num_reads=10, sweeps=1000, beta_range=(1.0, 50.0)):
     scale_qubo = {k: float(v) / max_abs_value for k, v in qubo.items()}
     sa = neal.SimulatedAnnealingSampler()
     sa_computation = sa.sample_qubo(scale_qubo, num_reads=num_reads,
-                                    num_sweeps=sweeps, beta_range=beta_range)
+                                    num_sweeps=sweeps, seed=seed,
+                                    beta_range=beta_range, beta_schedule_type=beta_schedule_type)
     best = np.argmin(sa_computation.record.energy)
     best_solution = list(sa_computation.record.sample[best])
     return dict(zip(sa_computation.variables, best_solution))
 
 
 @deprecated(version='0.4.0', reason="You should use simulated annealing sampler of dwave-neal directly.")
-def solve_ising(linear, quad, num_reads=10, sweeps=1000, beta_range=(1.0, 50.0)):
+def solve_ising(linear, quad, num_reads=10, sweeps=1000, seed=None, beta_range=(1.0, 50.0), beta_schedule_type='geometric'):
     """[deprecated] Solve Ising model with Simulated Annealing (SA) provided by neal.
 
     Args:
@@ -74,7 +79,11 @@ def solve_ising(linear, quad, num_reads=10, sweeps=1000, beta_range=(1.0, 50.0))
 
         sweeps (int, default=1000): Number of iterations in each run of SA.
 
+        seed (int, default=None): Seed to run SA. If not provided, a random seed is chosen.
+
         beta_range (tuple(float, float), default=(1.0, 50.0)): Tuple of start beta and end beta.
+
+        beta_schedule_type (string, default='geometric'): Beta schedule type. Supported values are: linear, geometric
 
     Note:
 
@@ -98,7 +107,8 @@ def solve_ising(linear, quad, num_reads=10, sweeps=1000, beta_range=(1.0, 50.0))
     scale_quad = {k: float(v) / max_abs_value for k, v in quad.items()}
     sa = neal.SimulatedAnnealingSampler()
     sa_computation = sa.sample_ising(scale_linear, scale_quad, num_reads=num_reads,
-                                     num_sweeps=sweeps, beta_range=beta_range)
+                                     num_sweeps=sweeps, seed=seed,
+                                     beta_range=beta_range, beta_schedule_type=beta_schedule_type)
     best = np.argmin(sa_computation.record.energy)
     best_solution = list(sa_computation.record.sample[best])
     return dict(zip(sa_computation.variables, best_solution))
